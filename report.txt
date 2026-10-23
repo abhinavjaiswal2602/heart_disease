@@ -1,0 +1,120 @@
+=================================================================
+  HEART DISEASE RISK PREDICTION — FINAL PROJECT REPORT
+  FODS (Foundations of Data Science) Course Project
+=================================================================
+
+1. PROBLEM STATEMENT
+   --------------------------------------------------
+   Cardiovascular disease is the leading cause of death globally.
+   This project builds a machine-learning pipeline to predict the
+   PRESENCE of heart disease from clinical features, enabling
+   early identification of at-risk patients.
+   Binary Target: 0 = No Heart Disease | 1 = Heart Disease Present
+
+2. DATASET
+   --------------------------------------------------
+   Source  : UCI Machine Learning Repository — Cleveland Heart Disease
+   URL     : https://archive.ics.uci.edu/dataset/45/heart+disease
+   Raw rows: 303 | After cleaning: 297 rows
+   Features: 13 raw -> 20 after engineering
+
+   Columns:
+     age      — Age in years
+     sex      — Sex (1=Male, 0=Female)
+     cp       — Chest pain type (1=typical angina...4=asymptomatic)
+     trestbps — Resting blood pressure (mm Hg)
+     chol     — Serum cholesterol (mg/dl)
+     fbs      — Fasting blood sugar > 120 mg/dl
+     restecg  — Resting ECG results (0/1/2)
+     thalach  — Maximum heart rate achieved
+     exang    — Exercise-induced angina (1/0)
+     oldpeak  — ST depression induced by exercise
+     slope    — Slope of peak exercise ST segment (1/2/3)
+     ca       — No. of major vessels colored by fluoroscopy (0-3)
+     thal     — Thalassemia (3=normal, 6=fixed, 7=reversible defect)
+     target   — Diagnosis [BINARIZED: 0=healthy, 1=disease]
+
+3. DATA CLEANING SUMMARY
+   --------------------------------------------------
+   Missing values : 6 rows dropped (ca and thal had '?' placeholder)
+   Duplicates     : 0 found
+   Target         : Binarized (1/2/3/4 -> 1 = disease present)
+   Class balance  : 160 healthy / 137 disease
+   Outliers       : Detected via IQR but retained (clinically valid)
+
+4. EDA INSIGHTS
+   --------------------------------------------------
+   a) Average age: Healthy = 52.6 yrs vs Disease = 56.8 yrs
+      Older patients are more likely to have heart disease.
+   b) Disease prevalence: Males = 55.7% vs Females = 26.0%
+      Males in this dataset are at higher risk.
+   c) 76.3% of patients with exercise-induced angina have disease
+      Strong positive predictor.
+   d) Top 3 features correlated with target (Pearson |r|):
+      - thal         : 0.527
+      - ca           : 0.463
+      - oldpeak      : 0.424
+   e) 'thalach' (max heart rate) is NEGATIVELY correlated with disease
+      Higher max heart rate -> less likely to have disease.
+
+5. FEATURE ENGINEERING
+   --------------------------------------------------
+   - age_band   : Age binned into 4 bands (0=<40, 1=40-55, 2=55-70, 3=>70)
+   - risk_score : Sum of exang + fbs + (oldpeak>1.5) + (ca>0)
+   - One-hot encoding: cp (4->3), thal (3->2), slope (3->2), restecg (3->2)
+   - StandardScaler applied before model training (fit on train, transform test)
+
+6. MODEL COMPARISON
+   --------------------------------------------------
+   Model                     Acc    Prec   Recall      F1     AUC   CV-Rec
+   --------------------------------------------------------------------
+   Logistic Regression    0.8333  0.8750   0.7500  0.8077  0.9442 0.7688+/-0.1402
+   Decision Tree          0.7167  0.8235   0.5000  0.6222  0.7958 0.7416+/-0.1257
+   Random Forest          0.8333  0.8462   0.7857  0.8148  0.9386 0.7693+/-0.1260
+   K-Nearest Neighbors    0.8500  0.8519   0.8214  0.8364  0.9152 0.7879+/-0.1166
+
+7. FINAL MODEL RECOMMENDATION & JUSTIFICATION
+   --------------------------------------------------
+
+   RECOMMENDED MODEL: K-Nearest Neighbors
+     Recall     : 0.8214
+     Precision  : 0.8519
+     F1-Score   : 0.8364
+     Accuracy   : 0.8500
+     ROC-AUC    : 0.9152
+
+   HEALTHCARE FRAMING:
+   In a clinical context, a FALSE NEGATIVE (missing a patient who
+   actually has heart disease) is far more dangerous than a false
+   positive (flagging a healthy patient for further tests).
+   - False positive -> unnecessary (but safe) follow-up
+   - False negative -> potentially life-threatening missed diagnosis
+
+   Therefore, RECALL is prioritised as the primary model selection metric.
+   K-Nearest Neighbors achieves the highest recall, minimising false negatives.
+
+8. CONCLUSION & LIMITATIONS
+   --------------------------------------------------
+   The pipeline demonstrates the full data-science workflow:
+   data acquisition -> cleaning -> EDA -> engineering -> modelling -> evaluation
+
+   Limitations:
+   - Small dataset (297 rows) limits generalisability
+   - Data collected in the 1980s; may not reflect modern populations
+   - No hyperparameter tuning (GridSearchCV could improve performance)
+   - Class imbalance is mild; SMOTE could be applied for robustness
+   - Explainability (SHAP) not included in this version
+
+9. OUTPUT FILES GENERATED
+   --------------------------------------------------
+   plots/target_distribution.png   — Class balance bar chart
+   plots/age_distribution.png      — Age histogram by disease status
+   plots/feature_vs_target.png     — Boxplots of numeric features
+   plots/categorical_vs_target.png — Count plots for categorical features
+   plots/correlation_heatmap.png   — Full feature correlation heatmap
+   plots/model_comparison.png      — Multi-metric model comparison bars
+   plots/confusion_matrix.png      — Confusion matrix (best model)
+   plots/roc_curves.png            — ROC curves (all 4 models)
+   plots/feature_importance.png    — Random Forest feature importance
+   report.txt                      — This report
+=================================================================
